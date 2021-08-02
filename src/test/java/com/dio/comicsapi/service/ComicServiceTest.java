@@ -1,11 +1,18 @@
 package com.dio.comicsapi.service;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.hamcrest.MatcherAssert;
@@ -95,5 +102,38 @@ public class ComicServiceTest {
 	    // then
 	    assertThrows(ComicNotFoundException.class, () -> comicService.findByName(expectedFoundComicDTO.getName()));
 	 }
+	 
+	 @Test
+	 void whenListComicIsCalledThenReturnAListOfComics() {
+	    // given
+	    ComicDTO expectedFoundComicDTO = ComicDTOBuilder.builder().build().toComicsDTO();
+	    Comic expectedFoundComic = comicMapper.toModel(expectedFoundComicDTO);
+
+	    //when
+	    when(comicRepository.findAll()).thenReturn(Collections.singletonList(expectedFoundComic));
+
+	    //then
+	    List<ComicDTO> foundListComicDTO = comicService.listAll();
+
+	    assertThat(foundListComicDTO, is(not(empty())));
+	    assertThat(foundListComicDTO.get(0), is(equalTo(expectedFoundComicDTO)));
+	    }
+	 
+	 @Test
+	 void whenExclusionIsCalledWithValidIdThenAComicShouldBeDeleted() throws ComicNotFoundException{
+	    // given
+	    ComicDTO expectedDeletedComicDTO = ComicDTOBuilder.builder().build().toComicsDTO();
+	    Comic expectedDeletedComic = comicMapper.toModel(expectedDeletedComicDTO);
+
+	    // when
+	    when(comicRepository.findById(expectedDeletedComicDTO.getId())).thenReturn(Optional.of(expectedDeletedComic));
+	    doNothing().when(comicRepository).deleteById(expectedDeletedComicDTO.getId());
+
+	    // then
+	    comicService.deleteById(expectedDeletedComicDTO.getId());
+
+	    verify(comicRepository, times(1)).findById(expectedDeletedComicDTO.getId());
+	    verify(comicRepository, times(1)).deleteById(expectedDeletedComicDTO.getId());
+	    }
 
 }
