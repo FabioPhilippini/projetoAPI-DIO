@@ -1,6 +1,7 @@
 package com.dio.comicsapi.controller;
 
 import static com.dio.comicsapi.utils.JsonConvertionUtils.asJsonString;
+import static com.hqsapi.dio.springapi.utils.JsonConvertionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -25,8 +26,10 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import com.dio.comicsapi.builder.ComicDTOBuilder;
 import com.dio.comicsapi.dto.ComicDTO;
+import com.dio.comicsapi.dto.QuantityDTO;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
 import com.dio.comicsapi.service.ComicService;
+
 
 
 @ExtendWith(MockitoExtension.class)
@@ -145,6 +148,29 @@ public class ComicControllerTest {
 	        mockMvc.perform(MockMvcRequestBuilders.delete(COMIC_API_URL_PATH + "/" + comicDTO.getId())
 	                .contentType(MediaType.APPLICATION_JSON))
 	                .andExpect(status().isNoContent());
+	    }
+	    
+	    @Test
+	    void whenPATCHIsCalledToIncrementDiscountThenOKstatusIsReturned() throws Exception {
+	        //given
+	    	QuantityDTO quantityDTO = QuantityDTO.builder()
+	                .quantity(10)
+	                .build();
+
+	        ComicDTO comicDTO = ComicDTOBuilder.builder().build().toComicsDTO();
+	        comicDTO.setQuantity(comicDTO.getQuantity() + quantityDTO.getQuantity());
+            
+	        //when
+	        when(comicService.increment(VALID_COMIC_ID, quantityDTO.getQuantity())).thenReturn(comicDTO);
+
+	        //then
+	        mockMvc.perform(MockMvcRequestBuilders.patch(COMIC_API_URL_PATH + "/" + VALID_COMIC_ID + COMIC_API_SUBPATH_INCREMENT_URL)
+	                .contentType(MediaType.APPLICATION_JSON)
+	                .content(asJsonString(quantityDTO))).andExpect(status().isOk())
+	                .andExpect(jsonPath("$.name", is(comicDTO.getName())))
+	                .andExpect(jsonPath("$.authors", is(comicDTO.getAuthors())))
+	                .andExpect(jsonPath("$.publisher", is(comicDTO.getPublisher().toString())))
+	                .andExpect(jsonPath("$.quantity", is(comicDTO.getQuantity())));
 	    }
 
 }
