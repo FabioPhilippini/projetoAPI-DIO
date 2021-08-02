@@ -20,6 +20,7 @@ import com.dio.comicsapi.dto.QuantityDTO;
 import com.dio.comicsapi.exceptions.ComicAlreadyRegisteredException;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
 import com.dio.comicsapi.exceptions.ComicStockExceededException;
+import com.dio.comicsapi.exceptions.ComicWithInsufficientStockException;
 import com.dio.comicsapi.service.ComicService;
 
 
@@ -55,4 +56,10 @@ public class ComicController {
     public ComicDTO increment(@PathVariable Long id, @RequestBody @Valid QuantityDTO quantityDTO) throws ComicNotFoundException, ComicStockExceededException {
         return comicService.increment(id, quantityDTO.getQuantity());
     }
+	
+	@PatchMapping("/{id}/decrement")
+	public ComicDTO decrement(@PathVariable Long id, @RequestBody @Valid QuantityDTO quantityDTO)
+		throws ComicNotFoundException, ComicStockExceededException, ComicWithInsufficientStockException {
+		return comicService.decrement(id, quantityDTO.getQuantity());
+	}
 }
