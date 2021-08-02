@@ -3,6 +3,7 @@ package com.dio.comicsapi.service;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -31,6 +32,7 @@ import com.dio.comicsapi.entity.Comic;
 import com.dio.comicsapi.exceptions.ComicAlreadyRegisteredException;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
 import com.dio.comicsapi.exceptions.ComicStockExceededException;
+import com.dio.comicsapi.exceptions.ComicWithInsufficientStockException;
 import com.dio.comicsapi.mapper.ComicMapper;
 import com.dio.comicsapi.repository.ComicRepository;
 
@@ -157,6 +159,26 @@ public class ComicServiceTest {
 
 	     assertThat(expectedQuantityAfterIncrement, equalTo(incrementedComicDTO.getQuantity()));
 	     assertThat(expectedQuantityAfterIncrement, lessThan(expectedComicDTO.getMax()));
+	    }
+	 
+	 @Test
+	 void whenDecrementIsCalledThenDecrementComicStock() throws ComicNotFoundException, ComicWithInsufficientStockException {
+	     //given
+	     ComicDTO expectedComicDTO = ComicDTOBuilder.builder().build().toComicsDTO();
+	     Comic expectedComic = comicMapper.toModel(expectedComicDTO);
+
+	     //when
+	     when(comicRepository.findById(expectedComicDTO.getId())).thenReturn(Optional.of(expectedComic));
+	     when(comicRepository.save(expectedComic)).thenReturn(expectedComic);
+
+	     int quantityToDecrement = 5;
+	     int expectedQuantityAfterDecrement = expectedComicDTO.getQuantity() - quantityToDecrement;
+
+	     // then
+	     ComicDTO decrementedComicDTO = comicService.decrement(expectedComicDTO.getId(), quantityToDecrement);
+
+	     assertThat(expectedQuantityAfterDecrement, equalTo(decrementedComicDTO.getQuantity()));
+	     assertThat(expectedQuantityAfterDecrement, greaterThan(0));       
 	    }
 
 }

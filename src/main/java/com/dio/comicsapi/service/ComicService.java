@@ -11,8 +11,10 @@ import com.dio.comicsapi.entity.Comic;
 import com.dio.comicsapi.exceptions.ComicAlreadyRegisteredException;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
 import com.dio.comicsapi.exceptions.ComicStockExceededException;
+import com.dio.comicsapi.exceptions.ComicWithInsufficientStockException;
 import com.dio.comicsapi.mapper.ComicMapper;
 import com.dio.comicsapi.repository.ComicRepository;
+
 
 
 @Service
@@ -56,6 +58,18 @@ public class ComicService {
 			return comicMapper.toDTO(incrementedComicStock);
 		}
 		throw new ComicStockExceededException(id, quantityToIncrement);
+	}
+	
+	public ComicDTO decrement(Long id, int quantityToDecrement) throws ComicNotFoundException, ComicWithInsufficientStockException {
+		Comic comicToDecrementStock = verifyIfExist(id);
+		int quantityInStock = comicToDecrementStock.getQuantity();
+		int quantityAfterDecrement =  comicToDecrementStock.getQuantity() - quantityToDecrement;
+		if (quantityAfterDecrement <= comicToDecrementStock.getMax()) {
+			comicToDecrementStock.setQuantity(comicToDecrementStock.getQuantity() - quantityToDecrement);
+			Comic decrementedComicStock = comicRepository.save(comicToDecrementStock);
+			return comicMapper.toDTO(decrementedComicStock);
+		}
+		throw new ComicWithInsufficientStockException(id,quantityInStock,quantityToDecrement);
 	}
 	
 	private Comic verifyIfExist(Long id) throws ComicNotFoundException {

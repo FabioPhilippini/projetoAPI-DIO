@@ -1,7 +1,6 @@
 package com.dio.comicsapi.controller;
 
 import static com.dio.comicsapi.utils.JsonConvertionUtils.asJsonString;
-import static com.hqsapi.dio.springapi.utils.JsonConvertionUtils.asJsonString;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
