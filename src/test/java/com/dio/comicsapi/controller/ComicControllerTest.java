@@ -33,7 +33,7 @@ import com.dio.comicsapi.service.ComicService;
 @ExtendWith(MockitoExtension.class)
 public class ComicControllerTest {
 	
-	 private static final String COMIC_API_URL_PATH = "/api/v1/comics";
+	 private static final String COMIC_API_URL_PATH = "/api/v1/comic";
 	 private static final long VALID_COMIC_ID = 1L;
 	 private static final long INVALID_COMIC_ID = 2l;
 	 private static final String COMIC_API_SUBPATH_INCREMENT_URL = "/increment";
