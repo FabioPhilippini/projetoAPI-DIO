@@ -2,7 +2,6 @@ package com.dio.comicsapi.dto;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
