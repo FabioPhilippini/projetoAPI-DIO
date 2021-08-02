@@ -10,9 +10,9 @@ import com.dio.comicsapi.dto.ComicDTO;
 import com.dio.comicsapi.entity.Comic;
 import com.dio.comicsapi.exceptions.ComicAlreadyRegisteredException;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
+import com.dio.comicsapi.exceptions.ComicStockExceededException;
 import com.dio.comicsapi.mapper.ComicMapper;
 import com.dio.comicsapi.repository.ComicRepository;
-
 
 
 @Service
@@ -46,10 +46,20 @@ public class ComicService {
 		verifyIfExist(id);
 		comicRepository.deleteById(id);
 	}
-
-	private void verifyIfExist(Long id) throws ComicNotFoundException {
-		comicRepository.findById(id).orElseThrow(() -> new ComicNotFoundException(id));
-		
+	
+	public ComicDTO increment(Long id, int quantityToIncrement) throws ComicNotFoundException, ComicStockExceededException {
+		Comic comicToIncrementStock = verifyIfExist(id);
+		int quantityAfterIncrement = quantityToIncrement + comicToIncrementStock.getQuantity();
+		if (quantityAfterIncrement <= comicToIncrementStock.getMax()) {
+			comicToIncrementStock.setQuantity(comicToIncrementStock.getQuantity() + quantityToIncrement);
+			Comic incrementedComicStock = comicRepository.save(comicToIncrementStock);
+			return comicMapper.toDTO(incrementedComicStock);
+		}
+		throw new ComicStockExceededException(id, quantityToIncrement);
+	}
+	
+	private Comic verifyIfExist(Long id) throws ComicNotFoundException {
+		return comicRepository.findById(id).orElseThrow(() -> new ComicNotFoundException(id));	
 	}
 
 	private void verifyIfIsAlreadyRegistered(String name) throws ComicAlreadyRegisteredException {
@@ -58,4 +68,6 @@ public class ComicService {
 			throw new ComicAlreadyRegisteredException(name);
 		}		
 	}
+	
+	
 }

@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
@@ -29,8 +30,10 @@ import com.dio.comicsapi.dto.ComicDTO;
 import com.dio.comicsapi.entity.Comic;
 import com.dio.comicsapi.exceptions.ComicAlreadyRegisteredException;
 import com.dio.comicsapi.exceptions.ComicNotFoundException;
+import com.dio.comicsapi.exceptions.ComicStockExceededException;
 import com.dio.comicsapi.mapper.ComicMapper;
 import com.dio.comicsapi.repository.ComicRepository;
+
 
 
 @ExtendWith(MockitoExtension.class)
@@ -134,6 +137,26 @@ public class ComicServiceTest {
 
 	    verify(comicRepository, times(1)).findById(expectedDeletedComicDTO.getId());
 	    verify(comicRepository, times(1)).deleteById(expectedDeletedComicDTO.getId());
+	    }
+	 
+	 @Test
+	 void whenIncrementIsCalledThenIncrementComicStock() throws ComicNotFoundException, ComicStockExceededException {
+	     //given
+	     ComicDTO expectedComicDTO = ComicDTOBuilder.builder().build().toComicsDTO();
+	     Comic expectedComic = comicMapper.toModel(expectedComicDTO);
+
+	     //when
+	     when(comicRepository.findById(expectedComicDTO.getId())).thenReturn(Optional.of(expectedComic));
+	     when(comicRepository.save(expectedComic)).thenReturn(expectedComic);
+
+	     int quantityToIncrement = 5;
+	     int expectedQuantityAfterIncrement = expectedComicDTO.getQuantity() + quantityToIncrement;
+
+	     // then
+	     ComicDTO incrementedComicDTO = comicService.increment(expectedComicDTO.getId(), quantityToIncrement);
+
+	     assertThat(expectedQuantityAfterIncrement, equalTo(incrementedComicDTO.getQuantity()));
+	     assertThat(expectedQuantityAfterIncrement, lessThan(expectedComicDTO.getMax()));
 	    }
 
 }
